@@ -1,0 +1,14 @@
+*{
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+::-webkit-scrollbar{
+  display: none;
+}
+
+.navbar{
+  top: 0px;
+  position: sticky;
+  z-index: 3;
+}
