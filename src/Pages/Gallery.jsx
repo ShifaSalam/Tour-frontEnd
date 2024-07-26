@@ -44,7 +44,7 @@ function Gallery() {
                                 <TourImages photo={item} tour={tours} />
                             </Col>
                         )) :
-                        <h5>no images</h5>
+                        <h5 className='text-center m-5 p-5'>Wait a moment...</h5>
                 }
             </Row>
         </>

@@ -59,7 +59,7 @@ function AddPhoto({setAddStatus}) {
                 keyboard={false}
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Calicut</Modal.Title>
+                    <Modal.Title>Post your Memmory</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Row>

@@ -1,19 +1,42 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Form, ListGroupItem, Button, ListGroup, FloatingLabel } from 'react-bootstrap'
-import { addBooking } from '../Services/allApis'
+import { addBooking, SingleTour } from '../Services/allApis'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function Booking({ tour, avgRating, allReviews }) {
-    const { state, rate,packageName } = tour
+    const { state, rate, packageName } = tour
     const today = new Date().toISOString().split('T')[0];
     const navigate = useNavigate()
-    const [booking, setBooking] = useState({
-        packageName: packageName, email: "", fullName: "", phone: "", guestSize: "", bookAt: "", totalAmount: 0
-    })
+    const { tid } = useParams()
+    const [tours, setTours] = useState([])
+
+
+    const [booking, setBooking] = useState(() => {
+        const savedBooking = JSON.parse(localStorage.getItem('booking')) || {};
+        return {
+            packageName: packageName, // Use tour prop directly
+            email: savedBooking.email || "",
+            fullName: savedBooking.fullName || "",
+            phone: savedBooking.phone || "",
+            guestSize: savedBooking.guestSize || "",
+            bookAt: savedBooking.bookAt || today,
+            totalAmount: savedBooking.totalAmount || 0
+        };
+    });
+    useEffect(() => {
+        localStorage.setItem('booking', JSON.stringify(booking));
+    }, [booking]);
+    useEffect(() => {
+        // Only update packageName if the tour prop changes
+        setBooking(prevBooking => ({
+            ...prevBooking,
+            packageName: packageName
+        }));
+    }, [tour, packageName]);
     const { guestSize } = booking
     const handleBooking = async () => {
-        const { packageName, email, fullName, phone, guestSize, bookAt, totalAmount } = booking
+        const { packageName, email, fullName, phone, guestSize, bookAt, totalAmount } = booking;
         const calculatedTotalAmount = 150 + (rate * guestSize);
         const updatedBooking = {
             ...booking,
@@ -21,25 +44,34 @@ function Booking({ tour, avgRating, allReviews }) {
         };
 
         if (!packageName || !email || !fullName || !phone || !guestSize || !bookAt) {
-            toast.warning("Provide Complete Data!!")
-        }
-        else {
-            const result = await addBooking(updatedBooking)
-
-            if (result.status == 200) {
-                toast.success(`Successfully Booked a Trip to${booking.packageName}`)
-                setBooking({
-                    packageName: packageName, email: "", fullName: "", phone: "", guestSize: "", bookAt: "", totalAmount: 0
-                })
-                navigate('/thank')
-
+            toast.warning("Provide Complete Data!!");
+        } else {
+            try {
+                const result = await addBooking(updatedBooking);
+                if (result.status === 200) {
+                    toast.success(`Successfully Booked a Trip to ${booking.packageName}`);
+                    setBooking({
+                        packageName: packageName,
+                        email: "",
+                        fullName: "",
+                        phone: "",
+                        guestSize: "",
+                        bookAt: "",
+                        totalAmount: 0
+                    });
+                    localStorage.removeItem('booking');
+                    navigate('/thank') // Clear local storage after successful booking
+                } else {
+                    toast.error("Booking failed, please try again.");
+                }
+            } catch (error) {
+                console.error("Error while booking:", error);
+                toast.error("An error occurred during booking. Please try again.");
             }
-            else {
-                toast.error(result.response.data)
-            }
-
         }
-    }
+    };
+    console.log(booking)
+    console.log(tours)
     return (
         <>
             <div className='border p-5 h-100'>
@@ -69,7 +101,7 @@ function Booking({ tour, avgRating, allReviews }) {
                         </FloatingLabel>
                         <div className='d-flex w-100'>
                             <FloatingLabel controlId="floatingInput" label="Date" className="mb-2 w-50">
-                                <Form.Control type="date" required placeholder="" min={today}  onChange={(e) => { setBooking({ ...booking, bookAt: e.target.value }) }} />
+                                <Form.Control type="date" required placeholder="" min={today} onChange={(e) => { setBooking({ ...booking, bookAt: e.target.value }) }} />
                             </FloatingLabel>
                             <FloatingLabel controlId="floatingInput" label="Guest" className="mb-2 w-50">
                                 <Form.Control type="number" required placeholder="Guest" min={1} max={tour.maxGroupSize} onChange={(e) => { setBooking({ ...booking, guestSize: e.target.value }) }} />

@@ -68,7 +68,7 @@ function Tours() {
                   <TourCard tours={item} />
                 </Col>
               )) :
-              <h1>No packages Available..</h1>
+              <h1>Loading...</h1>
           }
         </Row>
 

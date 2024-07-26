@@ -169,7 +169,7 @@ function Home() {
                               <TourImages photo={item} />
                             </div>
                           )) :
-                          <h5>no images</h5>
+                          <h5>Loading..</h5>
                       }
                       <div className='galleryButton' style={{ marginTop: '150px' }}>
                         <Link to={'/gal'} className=' ms-3'>
